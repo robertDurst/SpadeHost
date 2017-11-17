@@ -4,4 +4,5 @@ function importTest(name, path) {
     });
 }
 
-importTest("Game State Tests", './game_state_test');
+importTest("Determing Winning Poker Hand Tests", './poker_winner_test');
+// importTest("Game State Tests", './game_state_test');
