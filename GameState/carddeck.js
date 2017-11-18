@@ -50,5 +50,6 @@ function cardNumToSuite(num){
 }
 
 module.exports = {
-  Deck
+  Deck,
+  Card
 }
