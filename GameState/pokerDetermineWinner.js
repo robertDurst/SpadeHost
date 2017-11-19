@@ -1,7 +1,7 @@
 const _ = require('underscore');
 
 function scorePokerHand(cardArr){
-
+  
   // Seperate into values and suites
   const values = cardArr.map( card => {
     switch(card.value) {
@@ -62,10 +62,10 @@ function scorePokerHand(cardArr){
   if(isStraight) return [4, pairs[1][0]];
 
   // Check for a Three of a Kind --> 3 score
-  if(pairs[3]) return [3, pairs[3], ...pairs[1]];
+  if(pairs[3]) return [3, pairs[3][0], ...pairs[1]];
 
   // Check for a 2 Pair --> 2 score
-  if(pairs[2][1]) return [2, ...pairs[2], pairs[1][0]];
+  if(pairs[2] && pairs[2][1]) return [2, ...pairs[2], pairs[1][0]];
 
   // Check for a 1 Pair --> 1 score
   if(pairs[2]) return [1, pairs[2][0], ...pairs[1]];
