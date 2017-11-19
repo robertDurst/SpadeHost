@@ -1,7 +1,32 @@
 const _ = require('underscore');
 
+/*
+  Hands will be given serialized scores. These scores will be given
+  the following formats:
+
+  [SCORE][SIG_CARD_1][SIG_CARD_2][SIG_CARD_3][SIG_CARD_4][SIG_CARD_5]
+
+  SCORE: cards will be given a score 0-9 with 9 the highest
+
+  SIG_CARD: cards will be sorted and added to the serialized score
+  based on:
+
+  1) If it is a straight only need top number
+  2) If it is a pair or 'of a kind' put most significant
+     in sorted order witout duplicates
+  3) Else, put all in order
+
+  These scores will allow for easy comparison among hands
+  at the end of a round.
+
+  inputs:
+    cardArr: array of Card objects
+  outputs:
+    socre serialization array: score in the format described above
+*/
+
 function scorePokerHand(cardArr){
-  
+
   // Seperate into values and suites
   const values = cardArr.map( card => {
     switch(card.value) {
@@ -74,6 +99,68 @@ function scorePokerHand(cardArr){
   return [0, ...pairs[1]];
 }
 
+/*
+  Using the hand serialization score, card comparison will be
+  vastly simplified into three cases.
+
+  Case 1: Card ranking, the first number in the card score serialization,
+          will be compared. If these don't match, return the higher ranked
+          hand.
+
+  Case 2: Highest card comparison for hands of matching rank. Here I will
+          Go index by index, comparing the most important cards, sorted in
+          descending order. Some hand scoring serializations may appear to
+          be out of order, however this is not the case -- consider three
+          of a kind. For this hand, the three pair card value is more
+          important than the single card values. Thus, a hand of 2,2,2,10,9
+          will be ordered 2,10,9.
+
+  Case 3: Tie. If the all the cards are scanned, and the hands are identical,
+          a tie will be returned. For now, ties will not be broken by edge
+          case rules.
+
+  Inputs:
+    hand_1: score serialization array
+    hand_2: score serialization array
+  Outputs:
+    score: integer
+      0: tie
+      1: hand_1 wins
+      2: hand_2 wins
+*/
+
+function comparePokerHands(hand_1, hand_2){
+  // Case 1
+  if( hand_1[0] !== hand_2[0] ) return hand_1[0] > hand_2[0] ? 1 : 2;
+
+  // Case 2
+  for( var i = 1; i < hand_1.length; i ++) {
+    if(hand_1[i] > hand_2[i]) return 1;
+    if(hand_2[i] > hand_1[i]) return 2;
+  }
+
+  // Case 3
+  return 0;
+}
+
+/*
+  Takes an array of hands and then returns an array with the index of the
+  winning hand. In the case of a tie, the top indices will be returned.
+*/
+
+function determineWinner(handArr) {
+  let winnerArr = [0];
+  let winnerIndex;
+  for(var i = 1; i < handArr.length; i ++){
+    winnerIndex = comparePokerHands(handArr[winnerArr[0]], handArr[i]);
+    if(winnerIndex === 0) winnerArr.push(i);
+    if(winnerIndex === 2) winnerArr = [i];
+  }
+  return winnerArr;
+}
+
 module.exports = {
-  scorePokerHand
+  scorePokerHand,
+  comparePokerHands,
+  determineWinner
 };
