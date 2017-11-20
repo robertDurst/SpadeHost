@@ -1,6 +1,7 @@
 const chai = require('chai');
-const { comparePokerHands, scorePokerHand, determineWinner } = require('../GameState/pokerDetermineWinner');
-const Card = require('../GameState/carddeck').Card;
+const { comparePokerHands, scorePokerHand, determineWinner } = require('../src/DetermineWinner');
+const Card = require('../src/Card');
+const Deck = require('../src/Deck');
 
 let assert = chai.assert;
 
@@ -10,8 +11,8 @@ function makeHand(cardArr){
 }
 
 describe('Test Royal Flush', function(){
-  const hand_1 = makeHand([[1,0],[13,0],[12,0],[11,0],[10,0]]);
-  const hand_2 = makeHand([[1,1],[13,1],[12,1],[11,1],[10,1]]);
+  const hand_1 = makeHand([[14,0],[13,0],[12,0],[11,0],[10,0]]);
+  const hand_2 = makeHand([[14,1],[13,1],[12,1],[11,1],[10,1]]);
 
   const score_hand_1 = scorePokerHand(hand_1);
   const score_hand_2 = scorePokerHand(hand_2);

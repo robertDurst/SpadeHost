@@ -1,6 +1,20 @@
 const _ = require('underscore');
 
 /*
+  Given a 7 cards, return the 5 that creates the best hand
+*/
+
+function getBestHand() {
+  // Check for a flush -- group by suite
+
+  // Check for a straight -- sort by value
+
+  // Check for pairs -- group by value
+
+  // Determine the 5 cards to return
+}
+
+/*
   Hands will be given serialized scores. These scores will be given
   the following formats:
 
@@ -22,7 +36,7 @@ const _ = require('underscore');
   inputs:
     cardArr: array of Card objects
   outputs:
-    socre serialization array: score in the format described above
+    score serialization array: score in the format described above
 */
 
 function scorePokerHand(cardArr){
@@ -159,8 +173,19 @@ function determineWinner(handArr) {
   return winnerArr;
 }
 
+/*
+  Takes an array of raw, unscored poker hands and returns the index
+  of the winning hand.
+*/
+
+function getWinner(handArr) {
+  const scoredHands = handArr.map( x => scorePokerHand(x));
+  return determineWinner(scoredHands);
+}
+
 module.exports = {
   scorePokerHand,
   comparePokerHands,
-  determineWinner
+  determineWinner,
+  getWinner
 };
