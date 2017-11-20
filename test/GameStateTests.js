@@ -1,20 +1,25 @@
+/*
+  Robert Durst, Lightning Spade, November 20, 2017
+  A set of tests covering a full game state.
+*/
+
 const chai = require('chai');
 const gameState = require('../src/GameState');
-const { getWinner } = require('../src/DetermineWinner');
+const {getWinner} = require('../src/DetermineWinner');
 
 let assert = chai.assert;
 
-describe('Initial state', function(){
+describe('Initial state', function() {
 
-  it('Initial state should be 0.', async function(){
+  it('Initial state should be 0.', async function() {
     assert.equal(gameState.state, 0);
   });
 
-  it('Should have no players to start.', function(){
+  it('Should have no players to start.', function() {
     assert.lengthOf(gameState.playerContainer.players, 0);
   });
 
-  it('Should initialize to 54 cards.', async function(){
+  it('Should initialize to 54 cards.', async function() {
     assert.lengthOf(gameState.deck.cards, 52);
   });
 
@@ -22,11 +27,11 @@ describe('Initial state', function(){
 
 describe('State 0: before game begins, open for players to enter/exit', function() {
 
-  it('Game state should be 0.', async function(){
+  it('Game state should be 0.', async function() {
     assert.equal(gameState.state, 0);
   });
 
-  it('Should have 1 player in player list.', function(){
+  it('Should have 1 player in player list.', function() {
     gameState.playerContainer.addPlayer('player1');
     gameState.playerContainer.addPlayer('player2');
     gameState.playerContainer.addPlayer('player3');
@@ -38,21 +43,21 @@ describe('State 0: before game begins, open for players to enter/exit', function
 
 describe('State 1: deal cards', function() {
 
-  it('Game state should be 1.', async function(){
+  it('Game state should be 1.', async function() {
     gameState.incrementState();
     assert.equal(gameState.state, 1);
   });
 
-  it('Player 1 should be the dealer.', function(){
+  it('Player 1 should be the dealer.', function() {
     gameState.playerContainer.newDealer();
     assert.equal(gameState.playerContainer.dealer, gameState.playerContainer.players[0]);
   });
 
-  it('Pot should be 0.', function(){
+  it('Pot should be 0.', function() {
     assert.equal(gameState.getPotValue(), 0);
   });
 
-  it('Player 1,2,3, and 4 should have two cards in their hand.', function(){
+  it('Player 1,2,3, and 4 should have two cards in their hand.', function() {
     gameState.dealCards(gameState.playerContainer.dealer);
     assert.lengthOf(gameState.playerContainer.players[0].hand, 2);
     assert.lengthOf(gameState.playerContainer.players[1].hand, 2);
@@ -64,12 +69,12 @@ describe('State 1: deal cards', function() {
 
 describe('State 2: round of betting with 0 cards on the table', function() {
 
-  it('Game state should be 2.', function(){
+  it('Game state should be 2.', function() {
     gameState.incrementState();
     assert.equal(gameState.state, 2);
   });
 
-  it('Player 1 bets 10, Player 2 folds, and Player 3+4 call.', function(){
+  it('Player 1 bets 10, Player 2 folds, and Player 3+4 call.', function() {
     // Player 1 makes a bet
     var bet = gameState.playerContainer.players[0].makeBet(10);
     gameState.incrementPot(bet);
@@ -79,11 +84,11 @@ describe('State 2: round of betting with 0 cards on the table', function() {
     gameState.addFolded(gameState.playerContainer.players[1]);
 
     // Player 3 Calls
-    bet = gameState.playerContainer.players[2].makeBet(gameState.pot[gameState.pot.length-1].amount);
+    bet = gameState.playerContainer.players[2].makeBet(gameState.pot[gameState.pot.length - 1].amount);
     gameState.incrementPot(bet);
 
     // Player 4 Calls
-    bet = gameState.playerContainer.players[3].makeBet(gameState.pot[gameState.pot.length-1].amount);
+    bet = gameState.playerContainer.players[3].makeBet(gameState.pot[gameState.pot.length - 1].amount);
     gameState.incrementPot(bet);
 
     assert.lengthOf(gameState.folded, 1);
@@ -96,16 +101,16 @@ describe('State 2: round of betting with 0 cards on the table', function() {
 
 describe('State 3: reveal first 3 cards on the table', function() {
 
-  it('Game state should be 3.', function(){
+  it('Game state should be 3.', function() {
     gameState.incrementState();
     assert.equal(gameState.state, 3);
   });
 
-  it('Should be no cards on the table to start', function(){
+  it('Should be no cards on the table to start', function() {
     assert.lengthOf(gameState.spread, 0);
   });
 
-  it('Should be 3 cards on the table after drawing.', function(){
+  it('Should be 3 cards on the table after drawing.', function() {
     gameState.addCardToSpread();
     gameState.addCardToSpread();
     gameState.addCardToSpread();
@@ -116,12 +121,12 @@ describe('State 3: reveal first 3 cards on the table', function() {
 
 describe('State 4: round of betting with 3 cards on the table', function() {
 
-  it('Game state should be 4.', function(){
+  it('Game state should be 4.', function() {
     gameState.incrementState();
     assert.equal(gameState.state, 4);
   });
 
-  it('Player 1 bets 20, Player 3 folds, and Player 4 calls.', function(){
+  it('Player 1 bets 20, Player 3 folds, and Player 4 calls.', function() {
     // Player 1 makes a bet
     var bet = gameState.playerContainer.players[0].makeBet(20);
     gameState.incrementPot(bet);
@@ -131,7 +136,7 @@ describe('State 4: round of betting with 3 cards on the table', function() {
     gameState.addFolded(gameState.playerContainer.players[2]);
 
     // Player 4 Calls
-    bet = gameState.playerContainer.players[3].makeBet(gameState.pot[gameState.pot.length-1].amount);
+    bet = gameState.playerContainer.players[3].makeBet(gameState.pot[gameState.pot.length - 1].amount);
     gameState.incrementPot(bet);
 
     assert.lengthOf(gameState.folded, 2);
@@ -143,26 +148,26 @@ describe('State 4: round of betting with 3 cards on the table', function() {
 });
 
 describe('State 5: reveal the last card on the fourth card on the table', function() {
-  it('Game state should be 5.', function(){
+  it('Game state should be 5.', function() {
     gameState.incrementState();
     assert.equal(gameState.state, 5);
   });
-  it('Should be 3 cards on the table to start', function(){
+  it('Should be 3 cards on the table to start', function() {
     assert.lengthOf(gameState.spread, 3);
   });
-  it('Should be 4 cards on the table after drawing.', function(){
+  it('Should be 4 cards on the table after drawing.', function() {
     gameState.addCardToSpread();
     assert.lengthOf(gameState.spread, 4);
   });
 });
 
 describe('State 6: round of betting with 4 cards on the table', function() {
-  it('Game state should be 6.', function(){
+  it('Game state should be 6.', function() {
     gameState.incrementState();
     assert.equal(gameState.state, 6);
   });
 
-  it('Player 1 bets, Player 4 bets more, and Player 1 calls.', function(){
+  it('Player 1 bets, Player 4 bets more, and Player 1 calls.', function() {
     // Player 1 makes a bet
     var bet1 = gameState.playerContainer.players[0].makeBet(30);
     gameState.incrementPot(bet1);
@@ -181,55 +186,57 @@ describe('State 6: round of betting with 4 cards on the table', function() {
 });
 
 describe('State 7: reveal the last card on the table', function() {
-  it('Game state should be 7.', function(){
+  it('Game state should be 7.', function() {
     gameState.incrementState();
     assert.equal(gameState.state, 7);
   });
-  it('Should be 4 cards on the table to start', function(){
+  it('Should be 4 cards on the table to start', function() {
     assert.lengthOf(gameState.spread, 4);
   });
-  it('Should be 5 cards on the table after drawing.', function(){
+  it('Should be 5 cards on the table after drawing.', function() {
     gameState.addCardToSpread();
     assert.lengthOf(gameState.spread, 5);
   });
 });
 
 describe('State 8: round of betting with 5 cards on the table', function() {
-  it('Game state should be 8.', function(){
+  it('Game state should be 8.', function() {
     gameState.incrementState();
     assert.equal(gameState.state, 8);
   });
 
-  it('Player 1+4 check.', function(){
+  it('Player 1+4 check.', function() {
     assert.lengthOf(gameState.pot, 8);
     assert.equal(gameState.getPotValue(), 150);
   });
 });
 
 describe('State 9: players reveal their hands', function() {
-  it('Game state should be 9.', function(){
+  it('Game state should be 9.', function() {
     gameState.incrementState();
     assert.equal(gameState.state, 9);
   });
 });
 
 describe('State 10: pot is distributed and game state is reset', function() {
-  it('Game state should be 10.', function(){
+
+  it('Game state should be 10.', function() {
     gameState.incrementState();
     assert.equal(gameState.state, 10);
   });
-  it('Should be 5 cards on the table to start', function(){
+  it('Should be 5 cards on the table to start', function() {
     assert.lengthOf(gameState.spread, 5);
   });
-  it('Should be 0 cards on the table after reset.', function(){
-    gameState.clearSpread();
-    assert.lengthOf(gameState.spread, 0);
-  });
-  it('Player 1,2,3, and 4 should have 0 cards in their hand.', function(){
-    gameState.playerContainer.players.forEach( x => x.clearHand())
+  it('Game state should reset.', function() {
+    gameState.reset();
     assert.lengthOf(gameState.playerContainer.players[0].hand, 0);
     assert.lengthOf(gameState.playerContainer.players[1].hand, 0);
     assert.lengthOf(gameState.playerContainer.players[2].hand, 0);
     assert.lengthOf(gameState.playerContainer.players[3].hand, 0);
+    assert.lengthOf(gameState.spread, 0);
+    assert.lengthOf(gameState.pot, 0);
+    assert.lengthOf(gameState.folded, 0);
+    assert.equal(gameState.state, 0);
+    assert.lengthOf(gameState.deck.cards, 52);
   });
 });

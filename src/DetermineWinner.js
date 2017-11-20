@@ -1,18 +1,15 @@
-const _ = require('underscore');
-
 /*
-  Given a 7 cards, return the 5 that creates the best hand
+  Robert Durst, Lightning Spade, November 20, 2017
+  This file containes methods for determining the winner of
+  a poker game. It comes with three basic helper methods, one for scoring
+  hands, one for determing the winner of two hands, and one
+  for determing the winner between n hands. The final method
+  combines all three above methods allowing for the input of
+  n raw hands and returning the index (indices if ties) of
+  the winners.
 */
 
-function getBestHand() {
-  // Check for a flush -- group by suite
-
-  // Check for a straight -- sort by value
-
-  // Check for pairs -- group by value
-
-  // Determine the 5 cards to return
-}
+const _ = require('underscore');
 
 /*
   Hands will be given serialized scores. These scores will be given
@@ -34,83 +31,121 @@ function getBestHand() {
   at the end of a round.
 
   inputs:
-    cardArr: array of Card objects
+    cardArr: array of 7 Card objects
   outputs:
     score serialization array: score in the format described above
 */
 
-function scorePokerHand(cardArr){
-
+function scorePokerHand(cardArr) {
   // Seperate into values and suites
-  const values = cardArr.map( card => {
-    switch(card.value) {
-      case 'A':
-        return 14;
-      case 'K':
-        return 13;
-      case 'Q':
-        return 12;
-      case 'J':
-        return 11;
-      default:
-        return card.value;
+  const values = cardArr.map(card => card.value);
+  const suites = cardArr.map(card => card.suite);
+
+  // Check for a flush -- group by suite
+  const groupedSuites = _.countBy(suites, (suite) => suite);
+  const flushArr = Object.keys(groupedSuites).filter(x => groupedSuites[x] > 4);
+
+  // Check for a straight -- sort by value
+  const sorted = values.sort((a, b) => b - a);
+  let count = 0;
+  let longest = 0;
+  let straightStart = 0;
+  let tempLargest = 0;
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    var dif = sorted[i] - sorted[i + 1];
+    if (dif === 1 && count === 0) {
+      tempLargest = sorted[i];
+      count++;
+    } else if (dif === 1)
+      count++;
+    else {
+      count = 0;
     }
-  });
-  const suites = cardArr.map( card => card.suite);
+    if (longest < count) {
+      straightStart = tempLargest;
+      longest = count;
+    }
+  }
 
-  // Check for Flush
-  const isFlush = _.size(_.groupBy(suites, (suite) => suite)) === 1;
+  const isStraight = longest > 3;
 
-  // Check for Straight
-  const isStraight = values.sort((a,b) => b - a)
-                           .reduce( (flag, value, i) => i < 4 && values[i] - values[i+1] !== 1 ? false : flag, true)
-
-  // Group into pairs
-  const groupedCards = _.countBy(values, (value) => value);
+  // Check for pairs -- group by value
+  const groupedPairs = _.countBy(values, (value) => value);
   let pairs = {};
-  _.keys(groupedCards).forEach( valueKey => {
-    const numCards = groupedCards[valueKey];
-    if(pairs.hasOwnProperty(numCards)) {
+  _.keys(groupedPairs).forEach(valueKey => {
+    const numCards = groupedPairs[valueKey];
+    if (pairs.hasOwnProperty(numCards)) {
       pairs[numCards].push(parseInt(valueKey))
     } else {
       pairs[numCards] = [parseInt(valueKey)];
     }
-  } )
+  })
 
   // Sort each of the pairs by card value
   pairs = _.mapObject(pairs, function(val, key) {
-    return val.sort((a,b) => b - a);
+    return val.sort((a, b) => b - a);
   });
 
+  // Determine the 5 cards to return
   // Check for Royal Flush --> 9 score
-  if(isStraight && isFlush && pairs[1][0] === 14) return [9, pairs[1][0]];
+  if (isStraight && flushArr.length && straightStart === 14)
+    return [9, straightStart];
 
   // Check for Straight Flush --> 8 score
-  if(isStraight && isFlush) return [8, pairs[1][0]];
+  if (isStraight && flushArr.length)
+    return [8, straightStart];
 
   // Check for Four of a Kind --> 7 score
-  if(pairs[4]) return [7, pairs[4][0], pairs[1][0]];
+  if (pairs[4])
+    return [
+      7, pairs[4][0],
+      pairs[1][0]
+    ];
 
   // Check for a Full House --> 6 score
-  if(pairs[3] && pairs[2]) return [6, pairs[3][0], pairs[2][0]];
+  if (pairs[3] && pairs[2])
+    return [
+      6, pairs[3][0],
+      pairs[2][0]
+    ];
 
   // Check for a Flush --> 5 score
-  if(isFlush) return [5, ...values.sort((a,b) => b - a)];
+  if (flushArr.length)
+    return [
+      5, ...values.sort((a, b) => b - a).slice(0, 5)
+    ];
 
   // Check for a Straight --> 4 score
-  if(isStraight) return [4, pairs[1][0]];
+  if (isStraight)
+    return [4, straightStart];
 
   // Check for a Three of a Kind --> 3 score
-  if(pairs[3]) return [3, pairs[3][0], ...pairs[1]];
+  if (pairs[3])
+    return [
+      3, pairs[3][0],
+      ...values.sort((a, b) => b - a).filter(x => x !== pairs[3][0]).slice(0, 2)
+    ];
 
   // Check for a 2 Pair --> 2 score
-  if(pairs[2] && pairs[2][1]) return [2, ...pairs[2], pairs[1][0]];
+  if (pairs[2] && pairs[2][1])
+    return [
+      2, pairs[2][0],
+      pairs[2][1],
+      ...values.sort((a, b) => b - a).filter(x => x !== pairs[2][0] && x !== pairs[2][1]).slice(0, 1)
+    ];
 
   // Check for a 1 Pair --> 1 score
-  if(pairs[2]) return [1, pairs[2][0], ...pairs[1]];
+  if (pairs[2])
+    return [
+      1, pairs[2][0],
+      ...pairs[1].slice(0, 4)
+    ];
 
   // High Card --> 0 score
-  return [0, ...pairs[1]];
+  return [
+    0, ...pairs[1].slice(0, 5)
+  ];
 }
 
 /*
@@ -143,15 +178,20 @@ function scorePokerHand(cardArr){
       2: hand_2 wins
 */
 
-function comparePokerHands(hand_1, hand_2){
+function comparePokerHands(hand_1, hand_2) {
   // Case 1
-  if( hand_1[0] !== hand_2[0] ) return hand_1[0] > hand_2[0] ? 1 : 2;
+  if (hand_1[0] !== hand_2[0])
+    return hand_1[0] > hand_2[0]
+      ? 1
+      : 2;
 
   // Case 2
-  for( var i = 1; i < hand_1.length; i ++) {
-    if(hand_1[i] > hand_2[i]) return 1;
-    if(hand_2[i] > hand_1[i]) return 2;
-  }
+  for (var i = 1; i < hand_1.length; i++) {
+    if (hand_1[i] > hand_2[i])
+      return 1;
+    if (hand_2[i] > hand_1[i])
+      return 2;
+    }
 
   // Case 3
   return 0;
@@ -165,11 +205,13 @@ function comparePokerHands(hand_1, hand_2){
 function determineWinner(handArr) {
   let winnerArr = [0];
   let winnerIndex;
-  for(var i = 1; i < handArr.length; i ++){
+  for (var i = 1; i < handArr.length; i++) {
     winnerIndex = comparePokerHands(handArr[winnerArr[0]], handArr[i]);
-    if(winnerIndex === 0) winnerArr.push(i);
-    if(winnerIndex === 2) winnerArr = [i];
-  }
+    if (winnerIndex === 0)
+      winnerArr.push(i);
+    if (winnerIndex === 2)
+      winnerArr = [i];
+    }
   return winnerArr;
 }
 
@@ -179,7 +221,7 @@ function determineWinner(handArr) {
 */
 
 function getWinner(handArr) {
-  const scoredHands = handArr.map( x => scorePokerHand(x));
+  const scoredHands = handArr.map(x => scorePokerHand(x));
   return determineWinner(scoredHands);
 }
 

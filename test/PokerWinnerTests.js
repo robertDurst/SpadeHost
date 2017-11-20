@@ -1,3 +1,8 @@
+/*
+  Robert Durst, Lightning Spade, November 20, 2017
+  A set of tests covering the determine poker winner functionality.
+*/
+
 const chai = require('chai');
 const { comparePokerHands, scorePokerHand, determineWinner } = require('../src/DetermineWinner');
 const Card = require('../src/Card');
@@ -9,6 +14,29 @@ let assert = chai.assert;
 function makeHand(cardArr){
   return cardArr.map( x => new Card(x[0], x[1]));
 }
+
+describe('Test Finding Best Hand', function(){
+  const hand_1 = makeHand([[14,0],[13,0],[12,0],[11,0],[10,0], [9,0], [8,0]]);
+  const hand_2 = makeHand([[12,2],[12,1],[12,0],[9,1],[9,0],[2,1],[2,0]]);
+  const hand_3 = makeHand([[5,1],[11,1],[6,1],[3,1],[2,1],[3,0],[5,0]]);
+  const hand_4 = makeHand([[3,3],[3,2],[3,1],[14,0],[5,0],[4,0],[6,0]]);
+  const hand_5 = makeHand([[14,0],[6,2],[2,2],[2,3],[6,3],[5,0],[5,1]]);
+
+  const score_hand_1 = scorePokerHand(hand_1);
+  const score_hand_2 = scorePokerHand(hand_2);
+  const score_hand_3 = scorePokerHand(hand_3);
+  const score_hand_4 = scorePokerHand(hand_4);
+  const score_hand_5 = scorePokerHand(hand_5);
+
+
+  it('Test hands of length 7.', function(){
+    assert.deepEqual(score_hand_1, [9,14]);
+    assert.deepEqual(score_hand_2, [6,12,9]);
+    assert.deepEqual(score_hand_3, [5,11,6,5,5,3]);
+    assert.deepEqual(score_hand_4, [3,3,14,6]);
+    assert.deepEqual(score_hand_5, [2,6,5,14]);
+  });
+});
 
 describe('Test Royal Flush', function(){
   const hand_1 = makeHand([[14,0],[13,0],[12,0],[11,0],[10,0]]);
@@ -231,7 +259,7 @@ describe('Determine winner from 5 hands.', function(){
   const score_hand_4 = scorePokerHand(hand_4);
   const score_hand_5 = scorePokerHand(hand_5);
 
-  it('Player 3 should win with a flush', function(){
+  it('Player 3 should win with a flush.', function(){
     const winnerIndex_1 = determineWinner([score_hand_1, score_hand_2, score_hand_3, score_hand_4, score_hand_5])
     assert.deepEqual(winnerIndex_1, [2]);
   });
@@ -241,7 +269,7 @@ describe('Determine winner from 5 hands.', function(){
     assert.deepEqual(winnerIndex_2, [0]);
   });
 
-  it('Player 1 and player 3 should tie with exact same hand', function(){
+  it('Player 1 and player 3 should tie with exact same hand.', function(){
     const winnerIndex_3 = determineWinner([score_hand_1, score_hand_2, score_hand_1])
     assert.deepEqual(winnerIndex_3, [0,2]);
   });
