@@ -11,6 +11,11 @@
   "dependencies": {
     "bitcore-lib": "^0.15.0",
     "bluebird": "^3.5.1",
+    "chalk": "^2.3.0",
+    "co": "^4.6.0",
+    "co-prompt": "^1.0.0",
+    "commander": "^2.11.0",
+    "figlet": "^1.2.0",
     "grpc": "^1.7.1",
     "shelljs": "^0.7.8",
     "socket.io": "^2.0.4",
@@ -19,5 +24,8 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "mocha": "^4.0.1"
+  },
+  "bin": {
+    "snippet": "./cli/index.js"
   }
 }

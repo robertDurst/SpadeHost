@@ -1,6 +1,13 @@
+/*
+  Robert Durst, Lightning Spade, November 20, 2017
+
+*/
+
 const LightningUtils = require('./utils/LightningNetworkUtils');
-const Players = require('./GameState/players');
+const PlayerContainer = require('./src/PlayerContainer');
 const io = require('socket.io')(3002);
+
+const Players = new PlayerContainer();
 
 io.on('connection', function (socket) {
   socket.on('VERACK', async function(channel_info, pub_key) {
@@ -20,7 +27,7 @@ io.on('connection', function (socket) {
 
     if(socket.pub_key === response.pubkey && response.valid){
       Players.addPlayer(socket.pub_key)
-      socket.emit('ID_VERIFIED', Players.getPlayers())
+      socket.emit('ID_VERIFIED', Players.players)
     } else {
       socket.emit('CONNECTION_FAILURE')
     }

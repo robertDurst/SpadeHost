@@ -7,5 +7,7 @@
 
 const Game = require('./Game');
 
-const game = new Game();
+let game = new Game();
+
+
 module.exports = game;

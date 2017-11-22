@@ -28,7 +28,6 @@ describe('Test Finding Best Hand', function(){
   const score_hand_4 = scorePokerHand(hand_4);
   const score_hand_5 = scorePokerHand(hand_5);
 
-
   it('Test hands of length 7.', function(){
     assert.deepEqual(score_hand_1, [9,14]);
     assert.deepEqual(score_hand_2, [6,12,9]);

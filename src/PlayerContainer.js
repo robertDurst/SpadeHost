@@ -17,7 +17,7 @@ module.exports = class PlayerContainer {
   // Takes in a public key and adds a player object with
   // this public key to the players array if it is unique.
   addPlayer(publicKey) {
-    if (this.players.filter(x => x.pubKey)) {
+    if (!(this.players.filter(x => x.pubKey).length)) {
       this.players.push(new Player(publicKey));
     }
   }
