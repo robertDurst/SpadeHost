@@ -17,6 +17,7 @@ const Deck = require('./Deck');
 const Bet = require('./Bet');
 const Card = require('./Card');
 const Player = require('./Player');
+const DetermineWinner = require('./DetermineWinner');
 
 module.exports = class Game {
   constructor() {
@@ -26,6 +27,7 @@ module.exports = class Game {
     this.spread = [];
     this.folded = [];
     this.state = 0;
+    this.winner = undefined;
   }
 
   // Adds a player objects to the folded array
@@ -90,7 +92,7 @@ module.exports = class Game {
     hand property of each player object.
   */
   dealCards(dealer) {
-    let curPlayerIndex = this.playerContainer.players.indexOf(dealer);
+    const curPlayerIndex = this.playerContainer.players.reduce( (index, x, i) => x.isDealer ? i : index, -1);
     let curIndex;
     for (var i = 0; i < 2; i++) {
       for (var j = 0; j < this.playerContainer.players.length; j++) {
@@ -114,10 +116,132 @@ module.exports = class Game {
   // 6) Remove all players from folded
   reset() {
     this.playerContainer.players.forEach(x => x.clearHand())
+    this.winner = undefined;
     this.incrementState();
     this.clearSpread();
     this.deck = new Deck();
     this.clearPot();
     this.clearFolded();
+  }
+
+  bettingRound(io) {
+    // Start with dealer
+    // Set the end index to the dealer to start
+    const dealerIndex = this.playerContainer.players.reduce( (index, x, i) => x.isDealer ? i : index, -1);
+    let endIndex = dealerIndex;
+    let curIndex = dealerIndex;
+    const socketId = this.playerContainer.players[dealerIndex].socketId
+    const socket = io.sockets.sockets[socketId];
+
+
+    var self = this;
+    var counter = 0;
+    function recurse(s) {
+      console.log(curIndex, endIndex, counter);
+      if(curIndex === endIndex && counter > 0) {
+        return;
+      } else if(counter <= 1) {
+        s.emit('YOUR_TURN');
+        s.on('MOVE_MADE', async function(move) {
+          if(curIndex === endIndex) counter ++;
+          curIndex = (curIndex + 1) % self.playerContainer.players.length;
+          const socketId = self.playerContainer.players[curIndex].socketId
+          const socket = io.sockets.sockets[socketId];
+          recurse(socket)
+        });
+      }
+    }
+
+    recurse(socket);
+
+    // Begin loop
+    // while(curIndex !== endIndex) {
+    //
+    // }
+
+      // If bet, set the end index to the current index
+
+    // Round over
+  }
+
+  playerBet() {
+    // Tell the user it is their turn to bet
+
+    // Set an interval, probably 5-30 seconds
+
+    // On either receipt of player answer of interval ending, go to next player
+  }
+
+  playRound(io) {
+    if(!this.state) {
+      if(this.playerContainer.players.length > 1) {
+        this.incrementState();
+      }
+    } else {
+      this.incrementState();
+    }
+
+    switch(this.state) {
+
+      // Players can safely enter and exit
+      case 0:
+        break;
+
+      // Cards are dealt
+      case 1:
+        this.playerContainer.newDealer();
+        this.dealCards();
+        break;
+
+      // BETTING
+      case 2:
+        this.bettingRound(io);
+        break;
+
+      // First 3 cards of spread are revealed
+      case 3:
+        this.addCardToSpread(this.deck.cards.pop());
+        this.addCardToSpread(this.deck.cards.pop());
+        this.addCardToSpread(this.deck.cards.pop());
+        break;
+
+      // BETTING
+      case 4:
+        this.bettingRound(io);
+        break;
+
+      // 4th card of spread revealed
+      case 5:
+        this.addCardToSpread(this.deck.cards.pop());
+        break;
+
+      // BETTING
+      case 6:
+        this.bettingRound(io);
+        break;
+
+      // 5th card of spread revealed
+      case 7:
+        this.addCardToSpread(this.deck.cards.pop());
+        break;
+
+      // BETTING
+      case 8:
+        this.bettingRound(io);
+        break;
+
+      // WINNER IS REVEALED --> currently on this.winner
+      case 9:
+        let hands = this.playerContainer.players.map( x => x.hand)
+        hands = hands.filter( x => !!x.length )
+        hands = hands.map( x => x.concat(this.spread));
+        const winnerArr = DetermineWinner.getWinner(hands);
+        this.winner = winnerArr;
+        break;
+
+      // MONEY DISTRIBUTED and game reset
+      default:
+        this.reset();
+    }
   }
 }

@@ -9,10 +9,12 @@ const Card = require('./Card');
 const Bet = require('./Bet');
 
 module.exports = class Person {
-  constructor(publicKey) {
+  constructor(publicKey, socket) {
     this.pubKey = publicKey;
     this.hand = [];
     this.isDealer = false;
+    this.isBetting = false;
+    this.socketId = socket.id;
   }
 
   // Adds a card to the player's hand.

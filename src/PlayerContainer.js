@@ -16,10 +16,20 @@ module.exports = class PlayerContainer {
 
   // Takes in a public key and adds a player object with
   // this public key to the players array if it is unique.
-  addPlayer(publicKey) {
-    if (!(this.players.filter(x => x.pubKey).length)) {
-      this.players.push(new Player(publicKey));
+  addPlayer(publicKey, socket) {
+
+    const player = this.players.filter(x => x.pubKey === publicKey);
+    if (!(player.length)) {
+      this.players.push(new Player(publicKey, socket));
+    } else {
+      player[0].socketId = socket.id;
     }
+  }
+
+  // Takes in a public key and removes a player object with
+  // this public key.
+  removePlayer(publicKey) {
+    this.players.splice(this.players.map(x => x.pubKey).indexOf(publicKey), 1);
   }
 
   // Rotates the dealer. Instead of outputing the result, it simply
