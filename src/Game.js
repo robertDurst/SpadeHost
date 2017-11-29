@@ -137,8 +137,9 @@ module.exports = class Game {
     var self = this;
     var counter = 0;
     function recurse(s) {
-      console.log(curIndex, endIndex, counter);
-      if(curIndex === endIndex && counter > 0) {
+      if(curIndex === endIndex && counter === 1) {
+        console.log("END OF BETTING");
+        self.playRound(io);
         return;
       } else if(counter <= 1) {
         s.emit('YOUR_TURN');
@@ -153,6 +154,7 @@ module.exports = class Game {
     }
 
     recurse(socket);
+
 
     // Begin loop
     // while(curIndex !== endIndex) {
@@ -173,6 +175,7 @@ module.exports = class Game {
   }
 
   playRound(io) {
+
     if(!this.state) {
       if(this.playerContainer.players.length > 1) {
         this.incrementState();
@@ -180,7 +183,7 @@ module.exports = class Game {
     } else {
       this.incrementState();
     }
-
+    console.log("ROUND", this.state);
     switch(this.state) {
 
       // Players can safely enter and exit
@@ -191,6 +194,7 @@ module.exports = class Game {
       case 1:
         this.playerContainer.newDealer();
         this.dealCards();
+        this.playRound(io);
         break;
 
       // BETTING
@@ -203,6 +207,7 @@ module.exports = class Game {
         this.addCardToSpread(this.deck.cards.pop());
         this.addCardToSpread(this.deck.cards.pop());
         this.addCardToSpread(this.deck.cards.pop());
+        this.playRound(io);
         break;
 
       // BETTING
@@ -213,6 +218,7 @@ module.exports = class Game {
       // 4th card of spread revealed
       case 5:
         this.addCardToSpread(this.deck.cards.pop());
+        this.playRound(io);
         break;
 
       // BETTING
@@ -223,6 +229,7 @@ module.exports = class Game {
       // 5th card of spread revealed
       case 7:
         this.addCardToSpread(this.deck.cards.pop());
+        this.playRound(io);
         break;
 
       // BETTING
