@@ -194,12 +194,12 @@ module.exports = class Game {
       case 1:
         this.playerContainer.newDealer();
         this.dealCards();
-        this.playRound(io);
+        // this.playRound(io);
         break;
 
       // BETTING
       case 2:
-        this.bettingRound(io);
+        // this.bettingRound(io);
         break;
 
       // First 3 cards of spread are revealed
@@ -207,34 +207,34 @@ module.exports = class Game {
         this.addCardToSpread(this.deck.cards.pop());
         this.addCardToSpread(this.deck.cards.pop());
         this.addCardToSpread(this.deck.cards.pop());
-        this.playRound(io);
+        // this.playRound(io);
         break;
 
       // BETTING
       case 4:
-        this.bettingRound(io);
+        // this.bettingRound(io);
         break;
 
       // 4th card of spread revealed
       case 5:
         this.addCardToSpread(this.deck.cards.pop());
-        this.playRound(io);
+        // this.playRound(io);
         break;
 
       // BETTING
       case 6:
-        this.bettingRound(io);
+        // this.bettingRound(io);
         break;
 
       // 5th card of spread revealed
       case 7:
         this.addCardToSpread(this.deck.cards.pop());
-        this.playRound(io);
+        // this.playRound(io);
         break;
 
       // BETTING
       case 8:
-        this.bettingRound(io);
+        // this.bettingRound(io);
         break;
 
       // WINNER IS REVEALED --> currently on this.winner
@@ -243,6 +243,7 @@ module.exports = class Game {
         hands = hands.filter( x => !!x.length )
         hands = hands.map( x => x.concat(this.spread));
         const winnerArr = DetermineWinner.getWinner(hands);
+        console.log(winnerArr);
         this.winner = winnerArr;
         break;
 
